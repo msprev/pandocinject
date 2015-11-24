@@ -25,10 +25,8 @@ class Injector(object):
 
     def get_filter(self):
         def expand(key, value, format, meta):
-            if (key == 'Div' or key == 'Span') and "FILTER-inject" in value[0][1]:
+            if (key == 'Div' or key == 'Span') and self.kind in value[0][1]:
                 args = get_args(value[0][2])
-                # if args['kind'] != self.kind:
-                #     return
                 entries = load_source(args['source'], self.source_cache)
                 starred = get_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector, args['selector'])
@@ -50,14 +48,8 @@ def get_args(raw_args):
         return []
     args = dict()
     args['source'] = get_vals(raw_args, 'source')
-    args['kind'] = get_vals(raw_args, 'kind')
     args['selector'] = get_vals(raw_args, 'select')
     args['formatter'] = get_vals(raw_args, 'format')
-    if not args['kind']:
-        log('WARNING', 'no "kind" specified, reverting to default')
-        args['kind'] = ['default']
-    if len(args['kind']) > 1:
-        log('WARNING', 'only one kind allowed -- ignoring all except first')
     if len(args['formatter']) > 1:
         log('WARNING', 'only one formmatter allowed -- ignoring all except first')
     return args
