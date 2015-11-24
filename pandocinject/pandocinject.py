@@ -1,3 +1,5 @@
+import importlib
+import os
 from pandocfilters import *
 from pandocinject.reader import read_source
 from pandocinject.pandoc import markdown2json
@@ -7,19 +9,17 @@ FIELD_SELECTORS = ['uuid', 'slug']
 
 class Injector(object):
 
-    def init(self, k, formatter=None, selector=None):
+    def __init__(self, k, formatter=None, selector=None):
         self.kind = k
         self.source_cache = dict()
         if formatter:
-            self.formatter = f
+            self.formatter = formatter
         else:
-            import importlib
             log('WARNING', 'No formatter specified, reverting to default')
             self.formatter = importlib.import_module('formatter')
         if selector:
-            self.selector = s
+            self.selector = selector
         else:
-            import importlib
             log('WARNING', 'No selector specified, reverting to default')
             self.selector = importlib.import_module('selector')
 
@@ -27,12 +27,12 @@ class Injector(object):
         def expand(key, value, format, meta):
             if (key == 'Div' or key == 'Span') and "FILTER-inject" in value[0][1]:
                 args = get_args(value[0][2])
-                if args['kind'] != self.kind:
-                    return
+                # if args['kind'] != self.kind:
+                #     return
                 entries = load_source(args['source'], self.source_cache)
                 starred = get_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector, args['selector'])
-                text = format_entries(entries, formatter, args['formatter'], starred)
+                text = format_entries(entries, self.formatter, args['formatter'], starred)
                 ast = markdown2json(text, ['--smart'])
                 # if inline element:
                 if key == 'Span' and len(ast) > 0:
@@ -66,11 +66,11 @@ def load_source(filenames, cache):
     entries = list()
     for fname in filenames:
         if fname in cache:
-            incoming = cache['fname']
+            incoming = cache[fname]
         else:
             ftype = os.path.splitext(fname)[1]
             incoming = read_source(ftype, fname)
-            cache['fname'] = incoming
+            cache[fname] = incoming
         entries.extend(incoming)
     return entries
 
@@ -116,7 +116,7 @@ def select_entries(entries, selector, args):
         return []
     l1 = by_field(entries, args)
     l2 = by_class(entries, selector, args)
-    return list(set(l1 + l2))
+    return l1 + l2
 
 def format_entries(entries, formatter, classnames, starred):
     try:

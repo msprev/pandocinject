@@ -2,6 +2,8 @@
 #  readers for source files  #
 ##############################
 
+ENCODING = 'utf-8'
+
 def read_source(filetype, filename):
     if filetype == '.yaml':
         return read_yaml(filename)
@@ -17,15 +19,14 @@ def read_yaml(filename):
 def read_bibtex(filename):
     import bibtexparser
     from bibtexparser.bparser import BibTexParser
-    from bibtexparser.customization import *
 
     def customizations(record):
         """
         custom transformation applied during parsing
         """
-        record = convert_to_unicode(record)
+        record = bibtexparser.customization.convert_to_unicode(record)
         # Split author field from separated by 'and' into a list of "Name, Surname".
-        record = author(record)
+        record = bibtexparser.customization.author(record)
         # Split editor field from separated by 'and' into a list of "Name, Surname".
         record = editor_split(record)
         return record
