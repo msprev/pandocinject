@@ -1,3 +1,7 @@
+###################################
+#  Base class for all formatters  #
+###################################
+
 class Formatter(object):
 
     def format(self, entries, starred):
@@ -23,7 +27,7 @@ class Formatter(object):
         """
         format a single entry
         """
-        # return a string representation of yaml entry
+        # return a string representation of entry
         return str(e)
 
     def sort_entries(self, entries):

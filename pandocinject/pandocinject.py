@@ -23,7 +23,7 @@ class Injector(object):
             log('WARNING', 'No selector specified, reverting to default')
             self.selector = importlib.import_module('selector')
 
-    def transform(self):
+    def get_filter(self):
         def expand(key, value, format, meta):
             if (key == 'Div' or key == 'Span') and "FILTER-inject" in value[0][1]:
                 args = get_args(value[0][2])
