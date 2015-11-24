@@ -1,0 +1,12 @@
+# python stuff
+*.pyc
+__pycache__/
+/dist/
+build/
+venv/
+/*.egg-info
+.ropeproject/
+
+# vim tags
+tags
+
