@@ -116,7 +116,7 @@ def format_entries(entries, formatter, classnames, starred):
     except (AttributeError, IndexError):
         log('ERROR', 'formatter "%s" not found' % classnames[0])
         return []
-    return f.format(list(f.sort_entries(entries)), starred)
+    return f.format_block(list(f.sort_entries(entries)), starred)
 
 def log(level, msg):
     import os
