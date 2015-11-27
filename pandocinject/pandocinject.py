@@ -90,8 +90,9 @@ def select_entries(entries, selector, args):
         return out
 
     def by_class(entries, selector, args):
-        out = list()
         classnames = [a for a in args if not '=' in a]
+        if not classnames:
+            return []
         classes = list()
         for n in classnames:
             try:
@@ -100,6 +101,8 @@ def select_entries(entries, selector, args):
                 log('ERROR', 'selector "%s" not found' % n)
                 continue
         ss = [c() for c in classes]
+        if not ss:
+            return []
         for s in ss:
             entries = [e for e in entries if s.select(e) == True]
         return entries
