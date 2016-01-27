@@ -5,7 +5,6 @@ from pandocinject.reader import read_source
 from pandocinject.pandoc import text2json
 
 ENCODING = 'utf-8'
-FIELD_SELECTORS = ['uuid', 'slug']
 
 class Injector(object):
 
@@ -83,6 +82,7 @@ def select_entries(entries, selector_module, args):
 
     def by_field(entries, args):
         out = list()
+        FIELD_SELECTORS = ['uuid', 'slug']
         for f in FIELD_SELECTORS:
             hitlist = [a.split(f + '=', 1)[1] for a in args if a.startswith(f + '=')]
             selected = [e for e in entries if f in e and e[f] in hitlist]
