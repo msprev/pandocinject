@@ -1,8 +1,11 @@
 import importlib
 import os
+import re
+import string
 from pandocfilters import *
 from pandocinject.reader import read_source
 from pandocinject.pandoc import text2json
+from pandocinject.simplebool import BooleanEvaluator
 
 ENCODING = 'utf-8'
 
@@ -40,21 +43,20 @@ class Injector(object):
 
 
 def get_args(raw_args):
-    def get_vals(raw_args, name):
+    def get_arg(raw_args, name):
         for a in raw_args:
             if a[0] == name:
-                return a[1].split()
-        return []
+                return a[1]
+        return str()
     args = dict()
-    args['source'] = get_vals(raw_args, 'source')
-    args['selector'] = get_vals(raw_args, 'select')
-    args['formatter'] = get_vals(raw_args, 'format')
-    if len(args['formatter']) > 1:
-        log('WARNING', 'only one formmatter allowed -- ignoring all except first')
+    args['source'] = get_arg(raw_args, 'source')
+    args['selector'] = get_arg(raw_args, 'select')
+    args['formatter'] = get_arg(raw_args, 'format')
     return args
 
-def load_source(filenames, cache):
+def load_source(arg_val, cache):
     entries = list()
+    filenames = arg_val.split()
     for fname in filenames:
         if fname in cache:
             incoming = cache[fname]
@@ -78,46 +80,57 @@ def get_starred_entries(entries, meta):
             starred.append(e)
     return starred
 
-def select_entries(entries, selector_module, args):
+def select_entries(entries, selector_module, arg_val):
 
-    def by_field(entries, args):
-        out = list()
-        FIELD_SELECTORS = ['uuid', 'slug']
-        for f in FIELD_SELECTORS:
-            hitlist = [a.split(f + '=', 1)[1] for a in args if a.startswith(f + '=')]
-            selected = [e for e in entries if f in e and e[f] in hitlist]
-            out.extend(selected)
-        return out
+    # def by_field(entries, args):
+    #     out = list()
+    #     FIELD_SELECTORS = ['uuid', 'slug']
+    #     for f in FIELD_SELECTORS:
+    #         hitlist = [a.split(f + '=', 1)[1] for a in args if a.startswith(f + '=')]
+    #         selected = [e for e in entries if f in e and e[f] in hitlist]
+    #         out.extend(selected)
+    #     return out
 
-    def by_class(entries, selector_module, args):
-        classnames = [a for a in args if not '=' in a]
-        if not classnames:
-            return []
-        classes = list()
-        for n in classnames:
-            try:
-                classes.append(getattr(selector_module, n))
-            except AttributeError:
-                log('ERROR', 'selector "%s" not found' % n)
-                continue
-        ss = [c() for c in classes]
-        if not ss:
-            return []
-        for s in ss:
-            entries = [e for e in entries if s.select(e) == True]
-        return entries
-
-    if not entries:
+    if not arg_val:
         return []
-    l1 = by_field(entries, args)
-    l2 = by_class(entries, selector_module, args)
-    return l1 + l2
+    # 1. split into list of words
+    word_str = arg_val
+    REMOVE = [r'\band\b', r'\bAND\b', r'\bor\b', r'\bOR\b', r'\bnot\b', r'\bNOT\b', r'\(', r'\)']
+    for pat in REMOVE:
+        word_str = re.sub(pat, ' ', word_str)
+    words = word_str.split()
+    # 2. get a list of letters
+    letters = list(string.ascii_lowercase + string.ascii_uppercase)
+    if len(words) > len(letters):
+        log('ERROR', 'Exceeded number of selectors supported in boolean expression')
+        return []
+    # 3. assign a letter to each word
+    translation_table = dict()
+    translated = arg_val
+    for i, w in enumerate(words):
+        translation_table[w] = letters[i]
+        translated = re.sub(r'\b' + w + r'\b', translation_table[w], translated)
+    # 4. assign a function to each letter
+    class_table = dict()
+    for w in words:
+        try:
+            s = getattr(selector_module, w)()
+        except (AttributeError, IndexError):
+            log('ERROR', 'selector "%s" not found' % w)
+            return []
+        class_table[translation_table[w]] = s
+    # 5. create a parser
+    log('INFO', arg_val)
+    log('INFO', translated)
+    b = BooleanEvaluator(translated, class_table)
+    out = [e for e in entries if b.evaluate(e)]
+    return out
 
-def format_entries(entries, formatter_module, classnames, starred):
+def format_entries(entries, formatter_module, arg_val, starred):
     try:
-        f = getattr(formatter_module, classnames[0])()
+        f = getattr(formatter_module, arg_val)()
     except (AttributeError, IndexError):
-        log('ERROR', 'formatter "%s" not found' % classnames[0])
+        log('ERROR', 'formatter "%s" not found' % arg_val)
         return ('', 'markdown')
     text = f.format_block(list(f.sort_entries(entries)), starred)
     text_format = f.output_format
