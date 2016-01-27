@@ -11,6 +11,10 @@
 # Copyright 2006, by Paul McGuire
 # Updated 2013-Sep-14 - improved Python 2/3 cross-compatibility
 #
+# - Modified by Mark Sprevak on 2016-01-27
+# Modified to work as a boolean semantic evaluation engine
+# for selector expressions of pandocinject
+#
 from pyparsing import infixNotation, opAssoc, Keyword, Word, alphas
 
 # define classes to be built at parse time, as each matching
@@ -18,7 +22,7 @@ from pyparsing import infixNotation, opAssoc, Keyword, Word, alphas
 class BoolOperand(object):
     def __init__(self,t):
         self.label = t[0]
-        self.value = VALUE[t[0]]
+        self.value = VALUE_TABLE[t[0]]
     def __bool__(self):
         return self.value
     def __str__(self):
@@ -73,8 +77,7 @@ boolExpr = infixNotation( boolOperand,
     ("OR",  2, opAssoc.LEFT,  BoolOr),
     ])
 
-
-VALUE = dict()
+VALUE_TABLE = dict()
 
 class BooleanEvaluator(object):
 
@@ -84,5 +87,5 @@ class BooleanEvaluator(object):
 
     def evaluate(self, entry):
         for s in self.function_table:
-            VALUE[s] = self.function_table[s](entry)
+            VALUE_TABLE[s] = self.function_table[s](entry)
         return bool(boolExpr.parseString(self.string)[0])

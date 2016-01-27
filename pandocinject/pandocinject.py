@@ -81,16 +81,6 @@ def get_starred_entries(entries, meta):
     return starred
 
 def select_entries(entries, selector_module, arg_val):
-
-    # def by_field(entries, args):
-    #     out = list()
-    #     FIELD_SELECTORS = ['uuid', 'slug']
-    #     for f in FIELD_SELECTORS:
-    #         hitlist = [a.split(f + '=', 1)[1] for a in args if a.startswith(f + '=')]
-    #         selected = [e for e in entries if f in e and e[f] in hitlist]
-    #         out.extend(selected)
-    #     return out
-
     if not arg_val:
         return []
     # 1. split into list of words
@@ -128,8 +118,6 @@ def select_entries(entries, selector_module, arg_val):
             return []
         function_table[translation_table[w]] = s.select
     # 5. create a parser
-    log('INFO', arg_val)
-    log('INFO', translated)
     b = BooleanEvaluator(translated, function_table)
     out = [e for e in entries if b.evaluate(e)]
     return out
