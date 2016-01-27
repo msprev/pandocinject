@@ -30,8 +30,8 @@ class Injector(object):
                 entries = load_source(args['source'], self.source_cache)
                 starred = get_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector_module, args['selector'])
-                text = format_entries(entries, self.formatter_module, args['formatter'], starred)
-                ast = text2json(text, self.formatter.output_format, ['--smart'])
+                (text, text_format) = format_entries(entries, self.formatter_module, args['formatter'], starred)
+                ast = text2json(text, text_format, ['--smart'])
                 # if inline element:
                 if key == 'Span' and len(ast) > 0:
                     # inject contents of first block element
@@ -118,8 +118,10 @@ def format_entries(entries, formatter_module, classnames, starred):
         f = getattr(formatter_module, classnames[0])()
     except (AttributeError, IndexError):
         log('ERROR', 'formatter "%s" not found' % classnames[0])
-        return []
-    return f.format_block(list(f.sort_entries(entries)), starred)
+        return ('', 'markdown')
+    text = f.format_block(list(f.sort_entries(entries)), starred)
+    text_format = f.output_format
+    return (text, text_format)
 
 def log(level, msg):
     import os
