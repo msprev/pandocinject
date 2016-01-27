@@ -192,8 +192,8 @@ Note that the default formatter (in base class `Formatter`) creates block elemen
 
 The tag has three attributes that control what gets injected: `source`, `select`, `format`:
 
-1. `source`: source file(s) to read data from (yaml/bibtex/etc.)
-2. `select`: Python classes that select items from the data
+1. `source`: source file(s) from which to read data
+2. `select`: boolean string of Python classes that select items from the data
 3. `format`: Python class that formats the data into a string
 
 
@@ -211,53 +211,56 @@ File types currently supported include:
 
 ### `select`
 
-The `select` attribute takes a list of space-separated of selectors.
-Selectors can be of two types.
+The `select` attribute takes a boolean expression involving names of Python selector classes.
+    You can create these classes easily by subclassing `Selector` from module `pandocinject` and tweaking the result to suit your needs.
+    A description of how to write selector classes is below; for now, our focus is how to invoke selectors in your input document.
 
-1. Select by class
-2. Select by uuid or slug
-
-#### Select by class
-
-``` html
-<div class="inject-talk" source="talks.yaml" select="LastYear" format="Homepage"></div>
-```
-
-This selects the items using the class `LastYear`.
-This class contains a method -- `select` -- that is run on each entry and decides yes or no, whether the entry should be included in the injected list.
-
-Multiple classes may be listed in the `select` attribute.
-An item is selected for inclusion only if selected by *all* of the classes.
+`select` may consist of the name of a single selector or a boolean expression that involves the names of multiple selectors.
+    A space-separated list of selector names is equivalent to a boolean expression where each is joined with `AND`.
 
 ``` html
-<div class="inject-talk" source="talks.yaml" select="LastYear UK" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="JointAuthor" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="Paper LastYear" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="(LastYear OR Forthcoming) AND Paper AND NOT JointAuthor" format="Homepage"></div>
 ```
 
-Here, an item is selected for inclusion only if both `LastYear` and `UK` classes select it.
+Valid boolean operators include:
 
+- `AND`
+- `OR`
+- `NOT`
 
-#### Select by uuid or slug
+Brackets can be used to group expressions.
 
+Sometimes you want to select a particular item.
+You do not need to write a custom Python class to do this.
+panzerinject will create single-item selectors on the fly for you based on two identifying attributes that an item may have: `uuid` and `slug`.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Homepage"></div>
 <div class="inject-talk" source="talks.yaml" select="slug=my-great-talk" format="Homepage"></div>
 ```
 
-Sometimes you want to pick out some arbitrary items for which there is no obvious pattern.
-You can specify these items by two special attributes: uuid or slug.
-
-Class selectors and uuid/slug selectors can be freely mixed.
-If an item has been selected by its uuid/slug, it will be included before whether it has been selected by the class selectors.
+uuid/slug selectors can be freely mixed with the names of other selectors in boolean expressions.
 
 ### `format`
+
+The `format` attribute takes the name of single Python formatter class.
+    You can create these classes easily by subclassing `Formatter` from module `pandocinject` and tweaking the result to suit your needs.
+    A description of how to write formatter classes is below; for now, our focus is how to invoke selectors in your input document.
+
+``` html
+<div class="inject-talk" source="talks.yaml" select="JointAuthor" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="JointAuthor" format="CV"></div>
+<span class="inject-talk" source="talks.yaml" select="JointAuthor" format="Abstract"></div>
+```
 
 ## Input document metadata
 
 ### `star`
 
 Sometimes you may want to mark out certain entries as special in the document.
-    For example, you may wish to star certain entries if they appear in the document.
+    For example, you may wish to star certain entries when they appear in the document.
 
 If the input document contains a metadata variable `star`, this variable is read as a list of uuids or slugs.
     Any items with those identifiers will be starred if injected.
@@ -268,57 +271,68 @@ star:
     - "my-new-york-talk"
 ```
 
-What being starred means, is determined by the formatter used for injection.
+What being starred means is determined by the formatter used for injection.
 The default formatter prepends an asterisk ('`* `') to the item.
 
+## Python classes
 
-## Python selector/formatter
+## `Injector`
 
-You write a selector or formatter by subclassing `Selector` or `Formatter` as imported from module `pandocinject`.
-
-The base classes are very simple:
-
-* `Formatter`:
-* `Selector`:
-
-Each class has a small number of methods some of which you may wish to override when writing a formatter or selector.
+The pandoc filter is instantiating the class `Injector` from module `pandocinject`.
+    This injector object is created with
 
 ## `Selector`
 
-* `select(self, entry)`: returns `True` if `entry` is to be selected for injection into document, `False` otherwise
+You write a selector or formatter by subclassing `Selector` or `Formatter` as imported from module `pandocinject`.
 
-    - Base class behaviour: select every entry.
+The classes have a small number of methods, which you may wish to override for your own formatter or selector.
+
+* `select(self, entry)`:
+    - Returns:
+        - `True` if `entry` is to be selected for injection into document, `False` otherwise
+    - Arguments:
+        - `entry`: Entry (dictionary) to assess for selection
+    - Default:
+        - Return `True`
 
 ## `Formatter`
 
-* `output_format`: String specifying the format of the strings that this formatter object returns. Values could be any of pandoc's output formats (`'-o'`) (e.g. `'html'`, `'org'`).
-    - Default: `'markdown'`
+* `output_format`: Format of the text that this formatter object returns (string).
+    - Value:
+        - Any of pandoc's output formats (`'-o'`) (e.g. `'html'`, `'org'`).
+    - Default:
+        - `'markdown'`
 
-* `format_block(self, entries, starred)`: returns a String for the entire injected block
+* `format_block(self, entries, starred)`:
+    - Returns:
+        - Text to return (string)
+    - Arguments:
+        - `entries`: List of sorted entries
+        - `starred`: List of entries to star
+    - Default:
+        - Return a loose numbered list of entries each formatted by `format_entry`; star items by inserting a preceding asterisk
 
-    - `entries`: List of entries to be formatted, already been passed through `sort_entries`
-    - `starred`: List of entries to be starred
-    - Default: Return a loose numbered list of entries each formatted by `add_entry`; star items by inserting a preceding asterisk
+* `format_entry(self, entry)`:
+    - Returns:
+        - Text of formatted version of `entry`
+    - Arguments:
+        - `entry`: Entry (dictionary) to be formatted
+    - Default:
+        - Return Python's string representation of `entry`
 
-* `format_entry(self, entry)`: returns the markdown String for the formatted item `entry`
-
-    - `entry`: Dictionary with key--values for the entry
-    - Default: Return Python's String representation of `entry`
-
-* `sort_entries(self, entries)`: returns List of entries in order they should appear, first to last
-
-    - `entries`: List of entries in the order read from source
-    - Default: Do nothing to the order of entries
+* `sort_entries(self, entries)`:
+    - Returns:
+        - List of entries in order they should appear, first to last
+    - Arguments:
+        - `entries`: List of entries to sort
+    - Default:
+        - Return `entries` unchanged
 
 # Similar
 
-- gitit
-    - The main advantage is that pandocinject allows you do everything with just pandoc + filters.
-    You also don't need to learn any weird selection/formatting syntax. Just use Python to express
-    what you want done.
-
-- pandoc-citeproc
-    -   very sophisticated, but requires you to know csl.
+A large number of tools can accomplish the same.
+    But here there are no funky template/style/query languages (SQL, csl, biblatex, etc.) to learn.
+    The main feature of pandocinject is it provides a simple, general way to mine data and inject it into pandoc.
 
 # Release notes
 
