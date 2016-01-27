@@ -111,18 +111,18 @@ def select_entries(entries, selector_module, arg_val):
         translation_table[w] = letters[i]
         translated = re.sub(r'\b' + w + r'\b', translation_table[w], translated)
     # 4. assign a function to each letter
-    class_table = dict()
+    function_table = dict()
     for w in words:
         try:
             s = getattr(selector_module, w)()
         except (AttributeError, IndexError):
             log('ERROR', 'selector "%s" not found' % w)
             return []
-        class_table[translation_table[w]] = s
+        function_table[translation_table[w]] = s.select
     # 5. create a parser
     log('INFO', arg_val)
     log('INFO', translated)
-    b = BooleanEvaluator(translated, class_table)
+    b = BooleanEvaluator(translated, function_table)
     out = [e for e in entries if b.evaluate(e)]
     return out
 

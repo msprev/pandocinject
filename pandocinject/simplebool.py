@@ -18,7 +18,7 @@ from pyparsing import infixNotation, opAssoc, Keyword, Word, alphas
 class BoolOperand(object):
     def __init__(self,t):
         self.label = t[0]
-        self.value = TRUTHTABLE[t[0]]
+        self.value = VALUE[t[0]]
     def __bool__(self):
         return self.value
     def __str__(self):
@@ -74,15 +74,15 @@ boolExpr = infixNotation( boolOperand,
     ])
 
 
-TRUTHTABLE = dict()
+VALUE = dict()
 
 class BooleanEvaluator(object):
 
-    def __init__(self, string, class_table):
+    def __init__(self, string, function_table):
         self.string = string
-        self.class_table = class_table
+        self.function_table = function_table
 
     def evaluate(self, entry):
-        for s in self.class_table:
-            TRUTHTABLE[s] = self.class_table[s].select(entry)
+        for s in self.function_table:
+            VALUE[s] = self.function_table[s](entry)
         return bool(boolExpr.parseString(self.string)[0])
