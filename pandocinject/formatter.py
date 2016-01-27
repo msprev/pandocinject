@@ -12,7 +12,7 @@ class Formatter(object):
 
     def format_block(self, entries, starred):
         """
-        format a list of entries
+        format a block containing entries
         """
         out = str()
         for e in entries:
@@ -21,11 +21,11 @@ class Formatter(object):
             # star start of item
             if e in starred:
                 out += '\* '
-            out += self.add_entry(e)
+            out += self.format_entry(e)
             out += '\n\n'
         return out
 
-    def add_entry(self, entry):
+    def format_entry(self, entry):
         """
         format a single entry
         """
@@ -34,7 +34,7 @@ class Formatter(object):
 
     def sort_entries(self, entries):
         """
-        sort a list of entries
+        return entries to be formatted from first to list
         """
         # don't do anything
         return entries

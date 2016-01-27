@@ -9,19 +9,19 @@ FIELD_SELECTORS = ['uuid', 'slug']
 
 class Injector(object):
 
-    def __init__(self, k, formatter=None, selector=None):
+    def __init__(self, k, formatter_module=None, selector_module=None):
         self.kind = k
         self.source_cache = dict()
-        if formatter:
-            self.formatter = formatter
+        if formatter_module:
+            self.formatter_module = formatter_module
         else:
-            log('WARNING', 'No formatter specified, reverting to default')
-            self.formatter = importlib.import_module('formatter')
-        if selector:
-            self.selector = selector
+            log('WARNING', 'No formatter module specified, reverting to default')
+            self.formatter_module = importlib.import_module('formatter')
+        if selector_module:
+            self.selector_module = selector_module
         else:
-            log('WARNING', 'No selector specified, reverting to default')
-            self.selector = importlib.import_module('selector')
+            log('WARNING', 'No selector module specified, reverting to default')
+            self.selector_module = importlib.import_module('selector')
 
     def get_filter(self):
         def expand(key, value, format, meta):
@@ -29,8 +29,8 @@ class Injector(object):
                 args = get_args(value[0][2])
                 entries = load_source(args['source'], self.source_cache)
                 starred = get_starred_entries(entries, meta)
-                entries = select_entries(entries, self.selector, args['selector'])
-                text = format_entries(entries, self.formatter, args['formatter'], starred)
+                entries = select_entries(entries, self.selector_module, args['selector'])
+                text = format_entries(entries, self.formatter_module, args['formatter'], starred)
                 ast = text2json(text, self.formatter.output_format, ['--smart'])
                 # if inline element:
                 if key == 'Span' and len(ast) > 0:
@@ -79,7 +79,7 @@ def get_starred_entries(entries, meta):
             starred.append(e)
     return starred
 
-def select_entries(entries, selector, args):
+def select_entries(entries, selector_module, args):
 
     def by_field(entries, args):
         out = list()
@@ -89,14 +89,14 @@ def select_entries(entries, selector, args):
             out.extend(selected)
         return out
 
-    def by_class(entries, selector, args):
+    def by_class(entries, selector_module, args):
         classnames = [a for a in args if not '=' in a]
         if not classnames:
             return []
         classes = list()
         for n in classnames:
             try:
-                classes.append(getattr(selector, n))
+                classes.append(getattr(selector_module, n))
             except AttributeError:
                 log('ERROR', 'selector "%s" not found' % n)
                 continue
@@ -110,12 +110,12 @@ def select_entries(entries, selector, args):
     if not entries:
         return []
     l1 = by_field(entries, args)
-    l2 = by_class(entries, selector, args)
+    l2 = by_class(entries, selector_module, args)
     return l1 + l2
 
-def format_entries(entries, formatter, classnames, starred):
+def format_entries(entries, formatter_module, classnames, starred):
     try:
-        f = getattr(formatter, classnames[0])()
+        f = getattr(formatter_module, classnames[0])()
     except (AttributeError, IndexError):
         log('ERROR', 'formatter "%s" not found' % classnames[0])
         return []
