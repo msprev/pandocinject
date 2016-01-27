@@ -9,23 +9,23 @@ FIELD_SELECTORS = ['uuid', 'slug']
 
 class Injector(object):
 
-    def __init__(self, k, formatter_module=None, selector_module=None):
-        self.kind = k
+    def __init__(self, name, selector_module=None, formatter_module=None):
+        self.match_on = name
         self.source_cache = dict()
-        if formatter_module:
-            self.formatter_module = formatter_module
-        else:
-            log('WARNING', 'No formatter module specified, reverting to default')
-            self.formatter_module = importlib.import_module('formatter')
         if selector_module:
             self.selector_module = selector_module
         else:
             log('WARNING', 'No selector module specified, reverting to default')
             self.selector_module = importlib.import_module('selector')
+        if formatter_module:
+            self.formatter_module = formatter_module
+        else:
+            log('WARNING', 'No formatter module specified, reverting to default')
+            self.formatter_module = importlib.import_module('formatter')
 
     def get_filter(self):
         def expand(key, value, format, meta):
-            if (key == 'Div' or key == 'Span') and self.kind in value[0][1]:
+            if (key == 'Div' or key == 'Span') and self.match_on in value[0][1]:
                 args = get_args(value[0][2])
                 entries = load_source(args['source'], self.source_cache)
                 starred = get_starred_entries(entries, meta)
