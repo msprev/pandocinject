@@ -4,6 +4,12 @@
 
 class Formatter(object):
 
+    def __init__(self):
+        # the format of the strings that this formatter object yields
+        # values may be any of pandoc's output formats ('-o')
+        # e.g. 'html', 'org'
+        self.output_format = 'markdown'
+
     def format_block(self, entries, starred):
         """
         format a list of entries

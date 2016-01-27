@@ -27,12 +27,12 @@ class Pandoc(object):
         self.stdout = stdout_bytes.decode(ENCODING)
         self.stderr = stderr_bytes.decode(ENCODING)
 
-def markdown2json(mdtext, args=None):
-    pandoc_args = ['-', '-f', 'markdown', '-t', 'json']
+def text2json(text, text_format, args=None):
+    pandoc_args = ['-', '-f', text_format, '-t', 'json']
     if args:
         pandoc_args.extend(args)
     p = Pandoc(pandoc_args)
-    p.stdin = mdtext
+    p.stdin = text
     p.pandoc()
     json_doc = json.loads(p.stdout)
     # select only the data branch; ignore the metadata branch

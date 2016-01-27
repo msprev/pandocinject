@@ -2,7 +2,7 @@ import importlib
 import os
 from pandocfilters import *
 from pandocinject.reader import read_source
-from pandocinject.pandoc import markdown2json
+from pandocinject.pandoc import text2json
 
 ENCODING = 'utf-8'
 FIELD_SELECTORS = ['uuid', 'slug']
@@ -31,7 +31,7 @@ class Injector(object):
                 starred = get_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector, args['selector'])
                 text = format_entries(entries, self.formatter, args['formatter'], starred)
-                ast = markdown2json(text, ['--smart'])
+                ast = text2json(text, self.formatter.output_format, ['--smart'])
                 # if inline element:
                 if key == 'Span' and len(ast) > 0:
                     # inject contents of first block element
