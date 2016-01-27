@@ -113,6 +113,14 @@ def select_entries(entries, selector_module, arg_val):
     # 4. assign a function to each letter
     function_table = dict()
     for w in words:
+        # - select by uuid or slug
+        if w.split('=', 1)[0] in ['uuid', 'slug']:
+            key = w.split('=', 1)[0]
+            val = w.split('=', 1)[1]
+            function_table[translation_table[w]] = \
+                lambda e: True if key in e and e[key] == val else False
+            continue
+        # - select by named class selector
         try:
             s = getattr(selector_module, w)()
         except (AttributeError, IndexError):
