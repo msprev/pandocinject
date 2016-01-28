@@ -2,7 +2,7 @@
 title: "pandocinject"
 author:
     - name: Mark Sprevak
-date: 27 January 2016
+date: 28 January 2016
 style: Notes
 ...
 
@@ -13,16 +13,16 @@ Imagine you have a list of items in a structured data file (yaml, json, bibtex, 
     For example, you might have a file that includes a list of your talks, and you want to select some of the items, sort them, and format them neatly for a CV on your website.
 
 Wouldn't it be nice to do this without learning a funky template/style/query language?
-    Wouldn't it be nice to say the output you want directly in markdown/html/org/etc.?
+    Wouldn't it be nice to say the output you want directly in your favourite format (markdown/html/org/etc.)?
     And wouldn't it be nice to use a simple language like Python to do the selecting and formatting logic?
 
 pandocinject does this.
     Or rather, pandocinject creates pandoc filters do to this.
     Creating these filters is trivial.
-    Some worked examples are given below.
+    A worked example is given below.
 
 pandocinject is 100% Python.
-    Using pandocinject only requires a basic knowledge of Python.
+    Using it only requires a basic knowledge of Python.
     There are no funky template/style/query languages (SQL, csl, biblatex, etc.) to learn.
 
 
@@ -65,8 +65,8 @@ Suppose you have your talks in a yaml file, `talks.yaml`:
 
 You want to select the talks from 2015, and format them nicely.
 
-Let's write a filter that uses pandocinject to do it.
 Easy peasy.
+Let's write a filter.
 
 ## Step 1: Write the selector logic
 
@@ -165,7 +165,7 @@ The talks I have this week include:
 2. "A walk in the park", 3 January 2015 in Central Park
 ```
 
-# Other examples
+## Other examples
 
 You can see more worked examples of formatters and selectors here:
 
@@ -181,7 +181,7 @@ You inject into pandoc's input file by using a `div` or `span` with the class na
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="LastYear" format="Homepage"></div>
-<span class="inject-publication-info" source="publications.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Abstract"></div>
+<span class="inject-ref" source="pubs.yaml" select="SingleAuthor" format="Keywords"></div>
 ```
 
 - `div` tags are for injecting blocks
@@ -213,7 +213,7 @@ File types currently supported include:
 
 The `select` attribute takes a boolean expression involving names of Python selector classes.
     You can create these classes easily by subclassing `Selector` from module `pandocinject` and tweaking the result to suit your needs.
-    A description of how to write selector classes is below; for now, our focus is how to invoke selectors in your input document.
+    For now, our focus is how to choose an existing selector inside your input document using the `select` attribute.
 
 `select` may consist of the name of a single selector or a boolean expression that involves the names of multiple selectors.
     A space-separated list of selector names is equivalent to a boolean expression where each is joined with `AND`.
@@ -226,15 +226,15 @@ The `select` attribute takes a boolean expression involving names of Python sele
 
 Valid boolean operators include:
 
-- `AND`
-- `OR`
-- `NOT`
+- `AND`, `and`
+- `OR`, `or`
+- `NOT`, `not`
 
 Brackets can be used to group expressions.
 
 Sometimes you want to select a particular item.
-You do not need to write a custom Python class to do this.
-panzerinject will create single-item selectors on the fly for you based on two identifying attributes that an item may have: `uuid` and `slug`.
+You do not need to write a custom selector to do this.
+panzerinject will create a single-item selector on the fly based on two identifying attributes of an item: `uuid` and `slug`.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Homepage"></div>
@@ -247,7 +247,6 @@ uuid/slug selectors can be freely mixed with the names of other selectors in boo
 
 The `format` attribute takes the name of single Python formatter class.
     You can create these classes easily by subclassing `Formatter` from module `pandocinject` and tweaking the result to suit your needs.
-    A description of how to write formatter classes is below; for now, our focus is how to invoke selectors in your input document.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="JointAuthor" format="Homepage"></div>
@@ -278,8 +277,23 @@ The default formatter prepends an asterisk ('`* `') to the item.
 
 ## `Injector`
 
-The pandoc filter is instantiating the class `Injector` from module `pandocinject`.
-    This injector object is created with
+Objects from this class create pandoc filters.
+
+* `Injector(name, selector_module, formatter_module)`:
+    - Returns:
+        - An Injector object
+    - Arguments:
+        - `name`: name of `class` of `<div>` or `<span>` tags where injector will insert text
+        - `selector_module`: module with the selector classes for the injector
+        - `formatter_module`: module with formatter classes for the injector
+    - Default:
+        - `selector_module`: Default (base) class: selects everything in source file
+        - `formatter_module`: Default (base) class: formats entries as loose numbered list
+
+* `get_filter(self)`:
+    - Returns:
+        - Function that is a pandoc filter; can be passed to `toJSONFilter`
+
 
 ## `Selector`
 
@@ -336,6 +350,10 @@ A large number of tools can accomplish the same.
 
 # Release notes
 
+-   1.0 (28 January 2016):
+    -   implement boolean language for `select` attribute
+    -   documentation complete
+    -   clean up
 -   0.1 (24 November 2015):
     -   initial release
 
