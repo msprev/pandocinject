@@ -83,7 +83,7 @@ def get_starred_entries(entries, meta):
 def select_entries(entries, selector_module, arg_val):
     if not arg_val:
         return []
-    # 1. split into list of words
+    # 1. split into list of non-logical words
     word_str = arg_val
     REMOVE = [r'\band\b', r'\bAND\b', r'\bor\b', r'\bOR\b', r'\bnot\b', r'\bNOT\b', r'\(', r'\)']
     for pat in REMOVE:
@@ -103,21 +103,21 @@ def select_entries(entries, selector_module, arg_val):
     # 4. assign a function to each letter
     function_table = dict()
     for w in words:
-        # - select by uuid or slug
+        # - function: select by uuid or slug
         if w.split('=', 1)[0] in ['uuid', 'slug']:
             key = w.split('=', 1)[0]
             val = w.split('=', 1)[1]
             function_table[translation_table[w]] = \
                 lambda e: True if key in e and e[key] == val else False
             continue
-        # - select by named class selector
+        # - function: select by named class selector
         try:
             s = getattr(selector_module, w)()
         except (AttributeError, IndexError):
             log('ERROR', 'selector "%s" not found' % w)
             return []
         function_table[translation_table[w]] = s.select
-    # 5. create a parser
+    # 5. create an evaluator
     b = BooleanEvaluator(translated, function_table)
     out = [e for e in entries if b.evaluate(e)]
     return out
