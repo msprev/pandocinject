@@ -35,6 +35,4 @@ def text2json(text, text_format, args=None):
     p.stdin = text
     p.pandoc()
     json_doc = json.loads(p.stdout)
-    # select only the data branch; ignore the metadata branch
-    json_text = json_doc[1]
-    return json_text
+    return json_doc

@@ -33,7 +33,7 @@ class Injector(object):
                 starred = get_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector_module, args['selector'])
                 (text, text_format) = format_entries(entries, self.formatter_module, args['formatter'], starred)
-                ast = text2json(text, text_format, ['--smart'])
+                ast = text2json(text, text_format, ['--smart'])[1]
                 # if inline element:
                 if key == 'Span' and len(ast) > 0:
                     # inject contents of first block element
