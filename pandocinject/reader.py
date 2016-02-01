@@ -7,6 +7,8 @@ ENCODING = 'utf-8'
 def read_source(filetype, filename):
     if filetype == '.yaml':
         return read_yaml(filename)
+    elif filetype == '.json':
+        return read_json(filename)
     elif filetype == '.bib':
         return read_bibtex(filename)
     return []
@@ -15,6 +17,11 @@ def read_yaml(filename):
     import yaml
     with open(filename, 'r', encoding=ENCODING) as f:
         return yaml.load(f)
+
+def read_json(filename):
+    import json
+    with open(filename, 'r', encoding=ENCODING) as f:
+        return json.load(f)
 
 def read_bibtex(filename):
     import bibtexparser
