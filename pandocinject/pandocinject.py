@@ -61,7 +61,7 @@ def load_source(arg_val, cache):
         if fname in cache:
             incoming = cache[fname]
         else:
-            ftype = os.path.splitext(fname)[1]
+            ftype = os.path.splitext(fname)[1].lower()
             incoming = read_source(ftype, fname)
             cache[fname] = incoming
         entries.extend(incoming)
