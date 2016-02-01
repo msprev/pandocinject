@@ -193,8 +193,8 @@ You inject into pandoc's input file by using a `div` or `span` with the class na
 <span class="inject-ref" source="pubs.yaml" select="SingleAuthor" format="Keywords"></div>
 ```
 
-- `div` tags are for injecting data formatted into blocks
-- `span` tags are for injecting data formatted into an inline element
+- `div` tags are for injecting data formatted as a block
+- `span` tags are for injecting data formatted as an inline element
 
 Your formatter will likely behave differently depending on whether it is intended to be used for injecting block or inline elements.
 Note that the default formatter (in base class `Formatter`) injects block elements (loose numbered lists).
@@ -203,7 +203,7 @@ The `div` or `span` tag has three attributes that control what gets injected: `s
 
 1. `source`: source file(s) from which to read data
 2. `select`: boolean string of Python classes to select items from the data
-3. `format`: Python class to format items into a string
+3. `format`: Python class to format those items into a string
 
 
 ### `source`
@@ -221,9 +221,7 @@ File types currently supported:
 ### `select`
 
 The `select` attribute takes a boolean expression involving names of Python classes -- 'selector' classes.
-    You can create these classes easily by subclassing `Selector` from module `pandocinject` and changing the result to suit your needs.
-    This is described below.
-    Our focus here is to choose, inside your input document, selector classes using the `select` attribute.
+    You can create these classes by subclassing `Selector` from module `pandocinject` and changing the result to suit your needs.
 
 `select` may consist of the name of a single selector class or a boolean expression that involves the names of multiple classes.
     A space-separated list is equivalent to a boolean expression where each item is joined with `AND`.
@@ -244,22 +242,21 @@ Brackets can be used to group expressions.
 
 Sometimes you want to select a particular item.
 You do not need to write a custom selector class to do this.
-panzerinject can create a selector for a single item on the fly based on two identifying attributes of an item: `uuid` and `slug`.
+panzerinject will create a selector for a single item on the fly based on two identifying attributes: `uuid` and `slug`.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Homepage"></div>
 <div class="inject-talk" source="talks.yaml" select="slug=my-great-talk" format="Homepage"></div>
 ```
 
-In order for this to work, the relevant item must have either a `uuid` or `slug` attribute.
+In order for this to work, your item must have an `uuid` or `slug` attribute.
 
-uuid/slug selectors can be freely mixed with the names of other selectors in boolean expressions.
+uuid/slug selectors can be freely mixed with other selectors in boolean expressions.
 
 ### `format`
 
 The `format` attribute takes the name of a Python class -- the 'formatter' class.
-    You can create formatter classes by subclassing `Formatter` from module `pandocinject` and tweaking the result to suit your needs.
-    This is described below.
+    You can create a formatter class by subclassing `Formatter` from module `pandocinject` and tweaking the result to suit your needs.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="JointAuthor" format="Homepage"></div>
@@ -291,7 +288,7 @@ The default formatter prepends an asterisk ('`* `') to a starred item.
 ## `Injector`
 
 Objects from this class create pandoc filters.
-    You need to instantiate one of these to create a pandocinject filter for pandoc.
+    You need to instantiate one of these to create a pandoc filter.
 
 * `Injector(name, selector_module, formatter_module)`:
     - Returns:
@@ -313,7 +310,7 @@ Objects from this class create pandoc filters.
 
 You write a selector or formatter by subclassing `Selector` or `Formatter` as imported from module `pandocinject`.
 
-The classes have methods that you may wish to override for your own formatter or selector.
+These classes have methods that you are likely to wish to override for your own formatter or selector.
 
 * `select(self, entry)`:
     - Returns:
