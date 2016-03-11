@@ -3,7 +3,7 @@ pandocinject
 ============
 
 :Author: true
-:Date:   1 February 2016
+:Date:   11 March 2016
 
 pandocinject
 ============
@@ -13,7 +13,7 @@ bibtex, etc.). You want to select some of the items, format them nicely,
 and inject the result into a markdown/html/docx/etc document. For
 example, you might have a file that includes a list of your talks, and
 you want to select some of the items, sort them, and format them neatly
-for a CV on your website.
+for your website.
 
 Wouldn’t it be nice to do this without learning a funky
 template/style/query language? Wouldn’t it be nice to say the output you

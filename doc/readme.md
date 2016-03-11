@@ -2,7 +2,7 @@
 title: "pandocinject"
 author:
     - name: Mark Sprevak
-date: 1 February 2016
+date: 11 March 2016
 style: Notes
 ...
 
@@ -10,7 +10,7 @@ style: Notes
 
 Imagine you have a list of items in a structured data file (yaml, json, bibtex, etc.).
     You want to select some of the items, format them nicely, and inject the result into a markdown/html/docx/etc document.
-    For example, you might have a file that includes a list of your talks, and you want to select some of the items, sort them, and format them neatly for a CV on your website.
+    For example, you might have a file that includes a list of your talks, and you want to select some of the items, sort them, and format them neatly for your website.
 
 Wouldn't it be nice to do this without learning a funky template/style/query language?
     Wouldn't it be nice to say the output you want directly in your favourite format (markdown/html/org/etc.)?
