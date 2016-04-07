@@ -65,6 +65,7 @@ def load_source(arg_val, cache):
             incoming = read_source(ftype, fname)
             cache[fname] = incoming
         entries.extend(incoming)
+    log('INFO', '%d entries loaded' % len(entries))
     return entries
 
 def get_starred_entries(entries, meta):
@@ -82,7 +83,7 @@ def get_starred_entries(entries, meta):
 
 def select_entries(entries, selector_module, arg_val):
     if not arg_val:
-        return []
+        return entries
     # 1. split into list of non-logical words
     word_str = arg_val
     REMOVE = [r'\band\b', r'\bAND\b', r'\bor\b', r'\bOR\b', r'\bnot\b', r'\bNOT\b', r'\(', r'\)']
@@ -123,6 +124,7 @@ def select_entries(entries, selector_module, arg_val):
     return out
 
 def format_entries(entries, formatter_module, arg_val, starred):
+    log('INFO', '- %d entries sent to formatter' % len(entries))
     try:
         f = getattr(formatter_module, arg_val)()
     except (AttributeError, IndexError):
