@@ -47,7 +47,7 @@ def read_bibtex(filename):
         """
         if "editor" in record:
             if record["editor"]:
-                record["editor"] = getnames([i.strip() for i in record["editor"].replace('\n', ' ').split(" and ")])
+                record["editor"] = bibtexparser.customization.getnames([i.strip() for i in record["editor"].replace('\n', ' ').split(" and ")])
             else:
                 del record["editor"]
         return record
