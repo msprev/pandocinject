@@ -203,16 +203,17 @@ Valid boolean operators include:
 
 Brackets can be used to group expressions.
 
-Sometimes you want to select a particular item. You do not need to write a custom selector class to do this. panzerinject will create a selector for a single item on the fly based on two identifying attributes: `uuid` and `slug`.
+Sometimes you want to select a particular item. You do not need to write a custom selector class to do this. panzerinject will create a selector for a single item on the fly based on identifying attributes: `uuid`, `slug`, `ID`.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Homepage"></div>
 <div class="inject-talk" source="talks.yaml" select="slug=my-great-talk" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="ID=talk208" format="Homepage"></div>
 ```
 
-In order for this to work, your item must have an `uuid` or `slug` attribute.
+In order for this to work, your item must have an `uuid`, `slug`, or `ID` attribute.
 
-uuid/slug selectors can be freely mixed with other selectors in boolean expressions.
+uuid/slug/ID selectors can be freely mixed with other selectors in boolean expressions.
 
 ### `format`
 
@@ -224,6 +225,10 @@ The `format` attribute takes the name of a Python class – the ‘formatter’ 
 <span class="inject-talk" source="talks.yaml" select="JointAuthor" format="Abstract"></div>
 ```
 
+### `star`
+
+The `star` attribute takes a list of space-separated uuids/slugs/IDs. Items that match those uuids/slugs/IDs will be starred. This local change is equivalent to the global change of adding the item’s uuid/slug/ID to the `star` metadata variable, with the only difference being that the latter affects the entire document.
+
 Input document metadata
 -----------------------
 
@@ -231,7 +236,7 @@ Input document metadata
 
 Sometimes you may want to mark out certain entries as special. For example, you may wish to star certain entries when they appear in the document.
 
-If the input document contains a metadata variable `star`, which contains a list of uuids or slugs, any items with those identifiers will be starred if injected.
+If the input document contains a metadata variable `star`, which contains a list of uuids or slugs or IDs, any items with those identifiers will be starred if injected.
 
 ``` yaml
 star:

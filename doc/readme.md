@@ -265,6 +265,12 @@ The `format` attribute takes the name of a Python class -- the 'formatter' class
 <span class="inject-talk" source="talks.yaml" select="JointAuthor" format="Abstract"></div>
 ```
 
+### `star`
+
+The `star` attribute takes a list of space-separated uuids/slugs/IDs.
+    Items that match those uuids/slugs/IDs will be starred.
+    This local change is equivalent to the global change of adding the item's uuid/slug/ID to the `star` metadata variable, with the only difference being that the latter affects the entire document.
+
 ## Input document metadata
 
 ### `star`
