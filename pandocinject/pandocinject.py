@@ -30,7 +30,8 @@ class Injector(object):
             if (key == 'Div' or key == 'Span') and self.match_on in value[0][1]:
                 args = get_args(value[0][2])
                 entries = load_source(args['source'], self.source_cache)
-                starred = get_starred_entries(entries, meta)
+                starred = get_inline_starred_entries(entries, args['starred']) + \
+                          get_meta_starred_entries(entries, meta)
                 entries = select_entries(entries, self.selector_module, args['selector'])
                 (text, text_format) = format_entries(entries, self.formatter_module, args['formatter'], starred)
                 ast = text2json(text, text_format, ['--smart'])['blocks']
@@ -40,7 +41,6 @@ class Injector(object):
                     return ast[0]['c']
                 return ast
         return expand
-
 
 def get_args(raw_args):
     def get_arg(raw_args, name):
@@ -52,6 +52,7 @@ def get_args(raw_args):
     args['source'] = get_arg(raw_args, 'source')
     args['selector'] = get_arg(raw_args, 'select')
     args['formatter'] = get_arg(raw_args, 'format')
+    args['starred'] = get_arg(raw_args, 'star')
     return args
 
 def load_source(arg_val, cache):
@@ -68,7 +69,21 @@ def load_source(arg_val, cache):
     log('INFO', '%d entries loaded' % len(entries))
     return entries
 
-def get_starred_entries(entries, meta):
+def get_inline_starred_entries(entries, arg_val):
+    if not entries:
+        return []
+    if not arg_val:
+        return []
+    starred = list()
+    s_ids = arg_val.split()
+    for e in entries:
+        if ('uuid' in e and e['uuid'] in s_ids) \
+        or ('ID' in e and e['ID'] in s_ids) \
+        or ('slug' in e and e['slug'] in s_ids):
+            starred.append(e)
+    return starred
+
+def get_meta_starred_entries(entries, meta):
     if not entries:
         return []
     if 'star' not in meta or meta['star']['t'] != 'MetaList':
