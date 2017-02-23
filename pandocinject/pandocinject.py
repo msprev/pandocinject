@@ -104,12 +104,12 @@ def select_entries(entries, selector_module, arg_val):
     # 4. assign a function to each letter
     function_table = dict()
     for w in words:
-        # - function: select by uuid or slug
-        if w.split('=', 1)[0] in ['uuid', 'slug']:
+        # - function: select by uuid or slug or ID
+        if w.split('=', 1)[0] in ['uuid', 'slug', 'ID']:
             key = w.split('=', 1)[0]
             val = w.split('=', 1)[1]
             function_table[translation_table[w]] = \
-                lambda e: True if key in e and e[key] == val else False
+                lambda e, k=key, v=val: True if k in e and e[k] == v else False
             continue
         # - function: select by named class selector
         try:
