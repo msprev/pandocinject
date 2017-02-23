@@ -2,7 +2,7 @@
 title: "pandocinject"
 author:
     - name: Mark Sprevak
-date: 11 March 2016
+date: 23 February 2017
 style: Notes
 ...
 
@@ -242,16 +242,17 @@ Brackets can be used to group expressions.
 
 Sometimes you want to select a particular item.
 You do not need to write a custom selector class to do this.
-panzerinject will create a selector for a single item on the fly based on two identifying attributes: `uuid` and `slug`.
+panzerinject will create a selector for a single item on the fly based on identifying attributes: `uuid`, `slug`, `ID`.
 
 ``` html
 <div class="inject-talk" source="talks.yaml" select="uuid=6342F747-4294-4036-BE77-10364924164D" format="Homepage"></div>
 <div class="inject-talk" source="talks.yaml" select="slug=my-great-talk" format="Homepage"></div>
+<div class="inject-talk" source="talks.yaml" select="ID=talk208" format="Homepage"></div>
 ```
 
-In order for this to work, your item must have an `uuid` or `slug` attribute.
+In order for this to work, your item must have an `uuid`, `slug`, or `ID` attribute.
 
-uuid/slug selectors can be freely mixed with other selectors in boolean expressions.
+uuid/slug/ID selectors can be freely mixed with other selectors in boolean expressions.
 
 ### `format`
 
@@ -271,7 +272,7 @@ The `format` attribute takes the name of a Python class -- the 'formatter' class
 Sometimes you may want to mark out certain entries as special.
     For example, you may wish to star certain entries when they appear in the document.
 
-If the input document contains a metadata variable `star`, which contains a list of uuids or slugs,
+If the input document contains a metadata variable `star`, which contains a list of uuids or slugs or IDs,
     any items with those identifiers will be starred if injected.
 
 ``` yaml

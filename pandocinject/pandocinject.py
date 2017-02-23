@@ -77,6 +77,7 @@ def get_starred_entries(entries, meta):
     s_ids = [stringify(s) for s in meta['star']['c']]
     for e in entries:
         if ('uuid' in e and e['uuid'] in s_ids) \
+        or ('ID' in e and e['ID'] in s_ids) \
         or ('slug' in e and e['slug'] in s_ids):
             starred.append(e)
     return starred
